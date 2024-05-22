@@ -1,10 +1,13 @@
 from typing import Optional
+
 import httpx
 
 from elorus.auth import ElorusAuthentication
+from elorus.data_models import Contact
 from elorus.exceptions import (
     AuthenticationError,
     AuthorizationError,
+    BadRequestError,
     Error,
     ThrottlingError,
 )
@@ -35,7 +38,7 @@ class Client:
         )
 
     def _handle_response(self, response):
-        message = response.json().get("detail")
+        message = response.json()
 
         if response.status_code == 401:
             raise AuthenticationError(
@@ -55,7 +58,13 @@ class Client:
                 response=response,
             )
 
-        if response.status_code >= 400:
+        if response.status_code == 400:
+            raise BadRequestError(
+                message=message,
+                response=response,
+            )
+
+        if response.status_code >= 500:
             raise Error(
                 message=message,
                 response=response,
@@ -63,7 +72,7 @@ class Client:
 
         try:
             response.raise_for_status()
-            return response.json()
+            return message
         except:
             error = f"{response.text}"
             content_type = response.headers.get("Content-Type", "").lower()
@@ -100,3 +109,19 @@ class Contacts(SubClient):
 
     def list(self):
         return self.client._handle_request("GET", "contacts/")
+
+    def post(self, contact: Contact):
+        payload = contact.serialize()
+        return self.client._handle_request("POST", "contacts/", payload=payload)
+
+    def get(self, contact_id: str):
+        return self.client._handle_request("GET", f"contacts/{contact_id}/")
+
+    def put(self, contact_id: str, contact: Contact):
+        payload = contact.serialize()
+        return self.client._handle_request(
+            "PUT", f"contacts/{contact_id}/", payload=payload
+        )
+
+    def delete(self, contact_id: str):
+        return self.client._handle_request("DELETE", f"contacts/{contact_id}/")
