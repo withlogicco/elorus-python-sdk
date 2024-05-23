@@ -3,7 +3,7 @@ from typing import Optional
 import httpx
 
 from elorus.auth import ElorusAuthentication
-from elorus.data_models import Contact
+from elorus.models import Contact
 from elorus.exceptions import (
     AuthenticationError,
     AuthorizationError,
@@ -110,14 +110,14 @@ class Contacts(SubClient):
     def list(self):
         return self.client._handle_request("GET", "contacts/")
 
-    def post(self, contact: Contact):
+    def create(self, contact: Contact):
         payload = contact.serialize()
         return self.client._handle_request("POST", "contacts/", payload=payload)
 
     def get(self, contact_id: str):
         return self.client._handle_request("GET", f"contacts/{contact_id}/")
 
-    def put(self, contact_id: str, contact: Contact):
+    def update(self, contact_id: str, contact: Contact):
         payload = contact.serialize()
         return self.client._handle_request(
             "PUT", f"contacts/{contact_id}/", payload=payload
