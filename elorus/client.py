@@ -3,7 +3,6 @@ from typing import Optional
 import httpx
 
 from elorus.auth import ElorusAuthentication
-from elorus.models import Contact
 from elorus.exceptions import (
     AuthenticationError,
     AuthorizationError,
@@ -11,6 +10,7 @@ from elorus.exceptions import (
     Error,
     ThrottlingError,
 )
+from elorus.models import Contact, Invoice
 
 
 class Client:
@@ -29,6 +29,7 @@ class Client:
         self.api_version = api_version
 
         self.contacts = Contacts(self)
+        self.invoices = Invoices(self)
 
     def _get_auth(self):
         return ElorusAuthentication(
@@ -125,3 +126,46 @@ class Contacts(SubClient):
 
     def delete(self, contact_id: str):
         return self.client._handle_request("DELETE", f"contacts/{contact_id}/")
+
+
+class Invoices(SubClient):
+
+    def list(self):
+        return self.client._handle_request("GET", "invoices/")
+
+    def create(self, invoice: Invoice):
+        payload = invoice.serialize()
+        return self.client._handle_request("POST", "invoices/", payload=payload)
+
+    def get(self, invoice_id: str):
+        return self.client._handle_request("GET", f"invoices/{invoice_id}/")
+
+    def update(self, invoice_id: str, invoice: Invoice):
+        payload = invoice.serialize()
+        return self.client._handle_request(
+            "PUT", f"invoices/{invoice_id}/", payload=payload
+        )
+
+    def partial_update(self, invoice_id: str, invoice: Invoice):
+        payload = invoice.serialize()
+        return self.client._handle_request(
+            "PATCH", f"invoices/{invoice_id}/", payload=payload
+        )
+
+    def delete(self, invoice_id: str):
+        return self.client._handle_request("DELETE", f"invoices/{invoice_id}/")
+
+    def post_email(self, invoice_id: str, email: Email):
+        return self.client._handle_request("POST", f"invoices/{invoice_id}/email/")
+
+    def get_email(self, invoice_id: str):
+        return self.client._handle_request("GET", f"invoices/{invoice_id}/email/")
+
+    def get_pdf(self, invoice_id: str):
+        return self.client._handle_request("GET", f"invoices/{invoice_id}/pdf/")
+
+    def mark_void(self, invoice_id: str, is_void: bool = True):
+        payload = {"is_void": is_void}
+        return self.client._handle_request(
+            "POST", f"invoices/{invoice_id}/void/", payload=payload
+        )

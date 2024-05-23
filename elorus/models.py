@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
+from datetime import date as Date
 from typing import List, Optional
 
-from elorus.typings import AdType, DefaultCurrencyCode, DefaultLanguage
+from elorus.typings import AdType, CalculatorMode, DefaultCurrencyCode, DefaultLanguage
 
 
 @dataclass
@@ -112,4 +113,107 @@ class Contact:
             "default_currency_code": self.default_currency_code,
             "default_language": self.default_language,
             "default_theme": self.default_theme,
+        }
+
+
+@dataclass
+class BillingAddress:
+    address_line: str
+    city: str
+    state: str
+    zip: str
+    country: str
+
+    def serialize(self):
+        return {
+            "address_line": self.address_line,
+            "city": self.city,
+            "state": self.state,
+            "zip": self.zip,
+            "country": self.country,
+        }
+
+
+@dataclass
+class Item:
+    product: str
+    title: str
+    description: str
+    quantity: str
+    unit_measure: int
+    unit_value: str
+    unit_discount: str
+    unit_total: str
+    taxes: list = field(default_factory=list)
+
+    def serialize(self):
+        return {
+            "product": self.product,
+            "title": self.title,
+            "description": self.description,
+            "quantity": self.quantity,
+            "unit_measure": self.unit_measure,
+            "unit_value": self.unit_value,
+            "unit_discount": self.unit_discount,
+            "unit_total": self.unit_total,
+            "taxes": self.taxes,
+        }
+
+
+@dataclass
+class Invoice:
+    custom_id: str
+    documenttype: int
+    currency_code: Optional[DefaultCurrencyCode]
+    draft: Optional[bool] = False
+    sequence_id: Optional[str] = None
+    number: Optional[str] = ""
+    date: Date
+    due_days = Optional[int] = 0
+    client = int
+    client_display_name: Optional[str] = ""
+    client_profession: Optional[str] = ""
+    client_vat_number: Optional[str] = ""
+    billing_address: Optional[BillingAddress]
+    shipping_address: Optional[BillingAddress]
+    client_contact_person: Optional[str] = ""
+    client_phone_number: Optional[str] = ""
+    client_email: Optional[str] = ""
+    exchange_rate: Optional[str] = ""
+    calculator_mode: Optional[CalculatorMode] = "intial"
+    items: List[Item]
+    withholding_taxes: list = field(default_factory=list)
+    template_id: Optional[str] = None
+    public_notes: Optional[str] = ""
+    trackingcategories = Optional[List[TrackingCategory]]
+
+    def serialize(self):
+        return {
+            "custom_id": self.custom_id,
+            "documenttype": self.documenttype,
+            "currency_code": self.currency_code,
+            "draft": self.draft,
+            "sequence_id": self.sequence_id,
+            "number": self.number,
+            "date": self.date,
+            "due_days": self.due_days,
+            "client": self.client,
+            "client_display_name": self.client_display_name,
+            "client_profession": self.client_profession,
+            "client_vat_number": self.client_vat_number,
+            "billing_address": self.billing_address.serialize(),
+            "shipping_address": self.shipping_address.serialize(),
+            "client_contact_person": self.client_contact_person,
+            "client_phone_number": self.client_phone_number,
+            "client_email": self.client_email,
+            "exchange_rate": self.exchange_rate,
+            "calculator_mode": self.calculator_mode,
+            "items": [item.serialize() for item in self.items],
+            "withholding_taxes": self.withholding_taxes,
+            "template_id": self.template_id,
+            "public_notes": self.public_notes,
+            "trackingcategories": [
+                tracking_category.serialize()
+                for tracking_category in self.trackingcategories
+            ],
         }
