@@ -23,6 +23,13 @@ class AuthorizationError(Error):
         super().__init__(message, response)
 
 
+class BadRequestError(Error):
+    """Raised when the request is bad"""
+
+    def __init__(self, message, response=None):
+        super().__init__(message, response)
+
+
 class ThrottlingError(Error):
     """Raised when the rate limit is exceeded"""
 
