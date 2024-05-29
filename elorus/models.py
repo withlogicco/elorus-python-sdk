@@ -88,9 +88,6 @@ class Item(BaseDataClass):
     taxes: list = field(default_factory=list)
     title: Optional[str] = ""
 
-    def clean_dict(self):
-        return {k: v for k, v in asdict(self).items() if v is not None and v != ""}
-
 
 @dataclass
 class Invoice(BaseDataClass):
