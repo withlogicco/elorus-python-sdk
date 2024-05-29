@@ -185,4 +185,4 @@ DefaultCurrencyCode = Literal[
 ]
 
 
-CalculatorMode = Literal["intial", "total"]
+CalculatorMode = Literal["initial", "total"]

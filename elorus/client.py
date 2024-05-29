@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import Optional
 
 import httpx
@@ -10,7 +11,7 @@ from elorus.exceptions import (
     Error,
     ThrottlingError,
 )
-from elorus.models import Contact, Invoice
+from elorus.models import Contact, EmailBody, Invoice
 
 
 class Client:
@@ -38,7 +39,19 @@ class Client:
             is_demo=self.is_demo,
         )
 
+    def handle_file_download(self, response):
+        filename = response.headers.get("Content-Disposition", None)
+        if filename:
+            filename = filename.split("filename=")[1]
+        return filename, response.content
+
     def _handle_response(self, response):
+        if response.headers.get("Content-Type", "").lower() == "application/pdf":
+            return self.handle_file_download(response)
+
+        if response.status_code == 204:
+            return response.text
+
         message = response.json()
 
         if response.status_code == 401:
@@ -112,14 +125,14 @@ class Contacts(SubClient):
         return self.client._handle_request("GET", "contacts/")
 
     def create(self, contact: Contact):
-        payload = contact.serialize()
+        payload = asdict(contact)
         return self.client._handle_request("POST", "contacts/", payload=payload)
 
     def get(self, contact_id: str):
         return self.client._handle_request("GET", f"contacts/{contact_id}/")
 
     def update(self, contact_id: str, contact: Contact):
-        payload = contact.serialize()
+        payload = asdict(contact)
         return self.client._handle_request(
             "PUT", f"contacts/{contact_id}/", payload=payload
         )
@@ -134,20 +147,20 @@ class Invoices(SubClient):
         return self.client._handle_request("GET", "invoices/")
 
     def create(self, invoice: Invoice):
-        payload = invoice.serialize()
+        payload = invoice.clean_dict()
         return self.client._handle_request("POST", "invoices/", payload=payload)
 
     def get(self, invoice_id: str):
         return self.client._handle_request("GET", f"invoices/{invoice_id}/")
 
     def update(self, invoice_id: str, invoice: Invoice):
-        payload = invoice.serialize()
+        payload = invoice.clean_dict()
         return self.client._handle_request(
             "PUT", f"invoices/{invoice_id}/", payload=payload
         )
 
     def partial_update(self, invoice_id: str, invoice: Invoice):
-        payload = invoice.serialize()
+        payload = invoice.clean_dict()
         return self.client._handle_request(
             "PATCH", f"invoices/{invoice_id}/", payload=payload
         )
@@ -155,8 +168,11 @@ class Invoices(SubClient):
     def delete(self, invoice_id: str):
         return self.client._handle_request("DELETE", f"invoices/{invoice_id}/")
 
-    def post_email(self, invoice_id: str, email: Email):
-        return self.client._handle_request("POST", f"invoices/{invoice_id}/email/")
+    def post_email(self, invoice_id: str, email_body: EmailBody):
+        payload = email_body.clean_dict()
+        return self.client._handle_request(
+            "POST", f"invoices/{invoice_id}/email/", payload=payload
+        )
 
     def get_email(self, invoice_id: str):
         return self.client._handle_request("GET", f"invoices/{invoice_id}/email/")
