@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  elorus-python-sdk:
+    build: .
+    environment:
+      ELORUS_API_KEY: ${ELORUS_API_KEY}
+      ELORUS_ORGANIZATION_ID: ${ELORUS_ORGANIZATION_ID}
+      ELORUS_BASE_URL: ${ELORUS_BASE_URL}
+    volumes:
+      - .:/usr/src/app
+    network_mode: host
+    image: elorus-python-sdk:latest
+    command: sleep infinity

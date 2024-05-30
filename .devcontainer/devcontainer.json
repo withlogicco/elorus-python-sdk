@@ -5,7 +5,6 @@
     ],
     "service": "elorus-python-sdk",
     "workspaceFolder": "/usr/src/app",
-    "postCreateCommand": "poetry install",
     "features": {
       "ghcr.io/devcontainers/features/git:1": {
         "ppa": true,
