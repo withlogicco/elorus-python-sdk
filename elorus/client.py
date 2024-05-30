@@ -40,9 +40,13 @@ class Client:
         )
 
     def handle_file_download(self, response):
-        filename = response.headers.get("Content-Disposition", None)
-        if filename:
-            filename = filename.split("filename=")[1]
+        content_disposition = response.headers.get("Content-Disposition", "")
+        if "filename=" not in content_disposition:
+            raise ValueError("No filename found in Content-Disposition header")
+        filename_kv = content_disposition.split("filename=")
+        if len(filename_kv) < 2:
+            raise ValueError("Invalid Content-Disposition header format")
+        filename = filename_kv[1]
         return filename, response.content
 
     def _handle_response(self, response):
