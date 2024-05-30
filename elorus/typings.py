@@ -183,3 +183,6 @@ DefaultCurrencyCode = Literal[
     "ZMW",
     "ZWL",
 ]
+
+
+CalculatorMode = Literal["initial", "total"]

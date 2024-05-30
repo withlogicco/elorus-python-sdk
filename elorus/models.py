@@ -1,11 +1,18 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from datetime import date as Date
 from typing import List, Optional
 
-from elorus.typings import AdType, DefaultCurrencyCode, DefaultLanguage
+from elorus.typings import AdType, CalculatorMode, DefaultCurrencyCode, DefaultLanguage
 
 
 @dataclass
-class Addresses:
+class BaseDataClass:
+    def clean_dict(self):
+        return {k: v for k, v in asdict(self).items() if v is not None and v != ""}
+
+
+@dataclass
+class Addresses(BaseDataClass):
     id: str
     address: str
     city: str
@@ -15,61 +22,29 @@ class Addresses:
     branch_code: str
     ad_type: AdType
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "address": self.address,
-            "city": self.city,
-            "state": self.state,
-            "zip": self.zip,
-            "country": self.country,
-            "branch_code": self.branch_code,
-            "ad_type": self.ad_type,
-        }
-
 
 @dataclass
-class Email:
+class Email(BaseDataClass):
     email: str
     primary: Optional[bool] = False
     id: Optional[str] = None
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "email": self.email,
-            "primary": self.primary,
-        }
-
 
 @dataclass
-class Phone:
+class Phone(BaseDataClass):
     phone: str
     primary: Optional[bool] = False
     id: Optional[str] = None
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "phone": self.phone,
-            "primary": self.primary,
-        }
-
 
 @dataclass
-class TrackingCategory:
+class TrackingCategory(BaseDataClass):
     trackingcategory: str
     option: str
 
-    def serialize(self):
-        return {
-            "trackingcategory": self.trackingcategory,
-            "option": self.option,
-        }
-
 
 @dataclass
-class Contact:
+class Contact(BaseDataClass):
     custom_id: str
     first_name: str
     last_name: str
@@ -89,27 +64,67 @@ class Contact:
     default_language: Optional[DefaultLanguage] = "en"
     default_theme: Optional[str] = None
 
-    def serialize(self):
-        return {
-            "custom_id": self.custom_id,
-            "active": self.active,
-            "client_type": self.client_type,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "company": self.company,
-            "profession": self.profession,
-            "vat_number": self.vat_number,
-            "is_client": self.is_client,
-            "is_supplier": self.is_supplier,
-            "default_taxes": self.default_taxes,
-            "addresses": [address.serialize() for address in self.addresses],
-            "email": [email.serialize() for email in self.email],
-            "phones": [phone.serialize() for phone in self.phones],
-            "tracking_categories": [
-                tracking_category.serialize()
-                for tracking_category in self.tracking_categories
-            ],
-            "default_currency_code": self.default_currency_code,
-            "default_language": self.default_language,
-            "default_theme": self.default_theme,
-        }
+
+@dataclass
+class BillingAddress(BaseDataClass):
+    address_line: str
+    city: str
+    state: str
+    zip: str
+    country: str
+
+
+@dataclass
+class Item(BaseDataClass):
+    product: str
+    description: str
+    quantity: str
+    unit_measure: int
+    unit_value: str
+    unit_discount: str
+    unit_total: str
+    mydata_classification_category: str
+    mydata_classification_type: str
+    taxes: list = field(default_factory=list)
+    title: Optional[str] = ""
+
+
+@dataclass
+class Invoice(BaseDataClass):
+    custom_id: str
+    documenttype: int
+    currency_code: Optional[DefaultCurrencyCode]
+    date: Date
+    client: int
+    due_days: Optional[int]
+    billing_address: Optional[BillingAddress]
+    shipping_address: Optional[BillingAddress]
+    items: List[Item]
+    trackingcategories: Optional[List[TrackingCategory]]
+    client_display_name: Optional[str] = field(default="")
+    draft: Optional[bool] = False
+    sequence_id: Optional[str] = None
+    number: Optional[str] = ""
+    client_profession: Optional[str] = ""
+    client_vat_number: Optional[str] = ""
+    client_contact_person: Optional[str] = ""
+    client_phone_number: Optional[str] = ""
+    exchange_rate: Optional[str] = "1.0"
+    client_email: Optional[str] = ""
+    calculator_mode: Optional[CalculatorMode] = "initial"
+    withholding_taxes: list = field(default_factory=list)
+    template_id: Optional[str] = None
+    public_notes: Optional[str] = ""
+
+
+@dataclass
+class EmailBody(BaseDataClass):
+    to: str
+    subject: str
+    message: str
+    store_to: Optional[bool] = False
+    cc: Optional[str] = ""
+    bcc: Optional[str] = ""
+    attach_pdf: Optional[bool] = False
+    sender_name: Optional[str] = ""
+    attachments: list = field(default_factory=list)
