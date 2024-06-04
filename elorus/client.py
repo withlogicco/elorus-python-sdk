@@ -49,7 +49,7 @@ class Client:
         filename = filename_kv[1]
         return filename, response.content
 
-    def _handle_response(self, response):
+    def _handle_response(self, response: httpx.Response):
         if response.headers.get("Content-Type", "").lower() == "application/pdf":
             return self.handle_file_download(response)
 
@@ -108,7 +108,7 @@ class Client:
 
     def _handle_request(
         self, method: str, path: str, payload: Optional[dict] = None, **kwargs
-    ):
+    ) -> httpx.Response:
         auth = self._get_auth()
         url = f"{self.base_url}/{self.api_version}/{path}"
         with httpx.Client(auth=auth) as client:
@@ -116,8 +116,8 @@ class Client:
             return self._handle_response(response)
 
 
-class SubClient:
-    client = Client
+class SubClient(Client):
+    client: Client
 
     def __init__(self, client: Client):
         self.client = client
