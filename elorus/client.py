@@ -116,7 +116,7 @@ class Client:
             return self._handle_response(response)
 
 
-class SubClient:
+class SubClient(Client):
     client = Client
 
     def __init__(self, client: Client):
