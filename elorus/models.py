@@ -76,15 +76,15 @@ class BillingAddress(BaseDataClass):
 
 @dataclass
 class Item(BaseDataClass):
-    product: str
     description: str
-    quantity: str
-    unit_measure: int
-    unit_value: str
-    unit_discount: str
-    unit_total: str
     mydata_classification_category: str
     mydata_classification_type: str
+    unit_value: Optional[str] = "0.00"
+    unit_discount: Optional[str] = "0.00"
+    unit_total: Optional[str] = "0.00"
+    product: Optional[str] = ""
+    quantity: Optional[int] = 1
+    unit_measure: Optional[int] = None
     taxes: list = field(default_factory=list)
     title: Optional[str] = ""
 
@@ -96,6 +96,7 @@ class Invoice(BaseDataClass):
     currency_code: Optional[DefaultCurrencyCode]
     date: Date
     client: int
+    mydata_document_type: str
     due_days: Optional[int]
     billing_address: Optional[BillingAddress]
     shipping_address: Optional[BillingAddress]

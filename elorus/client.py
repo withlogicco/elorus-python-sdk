@@ -125,8 +125,8 @@ class SubClient(Client):
 
 class Contacts(SubClient):
 
-    def list(self):
-        return self.client._handle_request("GET", "contacts/")
+    def list(self, **params):
+        return self.client._handle_request("GET", "contacts/", params=params)
 
     def create(self, contact: Contact):
         payload = asdict(contact)
@@ -147,8 +147,8 @@ class Contacts(SubClient):
 
 class Invoices(SubClient):
 
-    def list(self):
-        return self.client._handle_request("GET", "invoices/")
+    def list(self, **params):
+        return self.client._handle_request("GET", "invoices/", params=params)
 
     def create(self, invoice: Invoice):
         payload = invoice.clean_dict()
